@@ -38,8 +38,9 @@ public class Main {
   private static List<Integer> redLookUpTable;
   private static List<Integer> greenLookUpTable;
   private static List<Integer> blueLookUpTable;
-  private static JFrame window = new JFrame("Histogram");
+  private static final JFrame window = new JFrame("Histogram");
   private static BufferedImage copy;
+  private static boolean isBeforeMorphology;
 
   public static void main(String[] args) {
     window.setLayout(new FlowLayout());
@@ -49,38 +50,37 @@ public class Main {
     window.add(menuButton);
     JButton openFileBtn = new JButton("Open file");
     menuButton.add(openFileBtn);
+    menuButton.add(new JLabel());
     JButton monochromeBtn = new JButton("Monochrome");
     menuButton.add(monochromeBtn);
     JButton stretchHistogram = new JButton("Stretch");
     menuButton.add(stretchHistogram);
+
     JButton equalizeBtn = new JButton("Equalize");
     menuButton.add(equalizeBtn);
-    JButton hitOrMiss = new JButton("HitOrMiss");
-    menuButton.add(hitOrMiss);
+
     JTextField thresholdTextField = new JTextField(5);
     menuButton.add(thresholdTextField);
     JButton manualBinarizeBtn = new JButton("Manual binarization");
     menuButton.add(manualBinarizeBtn);
-    menuButton.add(new JLabel());
-    menuButton.add(new JLabel());
+
     JTextField percentageTextField = new JTextField(5);
     menuButton.add(percentageTextField);
     JButton percentageBinarizeBtn = new JButton("Percentage binarization");
     menuButton.add(percentageBinarizeBtn);
     menuButton.add(new JLabel());
-    menuButton.add(new JLabel());
 
     JButton erode = new JButton("Erode");
     menuButton.add(erode);
-
     JButton dilate = new JButton("Dilate");
     menuButton.add(dilate);
-
     JButton open = new JButton("Open");
     menuButton.add(open);
-
     JButton close = new JButton("Close");
     menuButton.add(close);
+    JButton hitOrMiss = new JButton("HitOrMiss");
+    menuButton.add(hitOrMiss);
+
     // image
     imageWrapper = new ImageWrapper();
     window.add(imageWrapper);
@@ -145,33 +145,33 @@ public class Main {
         });
 
     erode.addActionListener(
-            e -> {
-              erode();
-              update(charts);
-            });
+        e -> {
+          erode();
+          update(charts);
+        });
 
     dilate.addActionListener(
-            e -> {
-              dilate();
-              update(charts);
-            });
+        e -> {
+          dilate();
+          update(charts);
+        });
 
     open.addActionListener(
-            e -> {
-              open();
-              update(charts);
-            });
+        e -> {
+          open();
+          update(charts);
+        });
 
     close.addActionListener(
-            e -> {
-              close();
-              update(charts);
-            });
+        e -> {
+          close();
+          update(charts);
+        });
 
     hitOrMiss.addActionListener(
-            e -> {
-              hitOrMiss();
-            });
+        e -> {
+          hitOrMiss();
+        });
 
     menuButton.setPreferredSize(new Dimension(WIDTH, 100));
     menuButton.setSize(new Dimension(WIDTH, 100));
@@ -222,10 +222,7 @@ public class Main {
       imageWrapper.repaint();
       addSeries(charts);
     }
-    monochrome();
-    percentageBinarization(30);
-    copy = deepCopy(imageWrapper.getImage());
-    window.repaint();
+    isBeforeMorphology = false;
   }
 
   private static void equalize() {
@@ -488,7 +485,7 @@ public class Main {
   }
 
   public static void erode() {
-
+    beforeMorphology();
     for (int i = 0; i < imageWrapper.getImage().getWidth(); i++) {
       copy.setRGB(i, 0, WHITE.getRGB());
       copy.setRGB(i, imageWrapper.getImage().getHeight() - 1, WHITE.getRGB());
@@ -531,7 +528,7 @@ public class Main {
   }
 
   public static void dilate() {
-
+    beforeMorphology();
     for (int i = 1; i < imageWrapper.getImage().getWidth() - 2; i++) {
       for (int j = 1; j < imageWrapper.getImage().getHeight() - 2; j++) {
         int[] hits = new int[5];
@@ -589,6 +586,7 @@ public class Main {
 
   @SneakyThrows
   public static void hitOrMiss() {
+    beforeMorphology();
     boolean changed;
     do {
       changed = false;
@@ -780,5 +778,14 @@ public class Main {
     RED,
     GREEN,
     BLUE;
+  }
+  private static void beforeMorphology(){
+    if(!isBeforeMorphology){
+      isBeforeMorphology = true;
+      monochrome();
+      percentageBinarization(30);
+      copy = deepCopy(imageWrapper.getImage());
+      window.repaint();
+    }
   }
 }
